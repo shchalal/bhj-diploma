@@ -1,23 +1,22 @@
-class Sidebar {
-  
-  static initToggleButton() {
-    
-    const toggleButton = document.querySelector('.sidebar-toggle.visible-xs');
-
-    if (!toggleButton) {
-      console.warn('Sidebar toggle button not found');
-      return;
+(function() {
+  class Sidebar {
+    static init() {
+      this.initAuthLinks();
+      this.initToggleButton();
     }
-
- 
-    toggleButton.addEventListener('click', event => {
-      event.preventDefault();
-      const body = document.body;
-
-
-      body.classList.toggle('sidebar-open');
-      body.classList.toggle('sidebar-collapse');
-    });
+    static initToggleButton() {
+      const btn = document.querySelector('.sidebar-toggle.visible-xs');
+      if (!btn) return console.warn('Toggle button not found');
+      btn.addEventListener('click', e => {
+        e.preventDefault();
+        document.body.classList.toggle('sidebar-open');
+        document.body.classList.toggle('sidebar-collapse');
+      });
+    }
+    static initAuthLinks() {
+      // ...
+    }
   }
 
-}
+  window.Sidebar = Sidebar;
+})();
