@@ -7,7 +7,7 @@ export class Sidebar {
 
  
   static initToggleButton() {
-    const toggleButton = document.querySelector('.sidebar-toggle.visible-xs');
+    const toggleButton = document.querySelector('.sidebar-toggle visible-xs'); 
     if (!toggleButton) return;
 
     toggleButton.addEventListener('click', (event) => {
