@@ -1,61 +1,35 @@
-(function() {
-  class Modal {
-
-    constructor(element) {
-      if (!(element instanceof HTMLElement)) {
-        throw new Error('Modal: передан неверный элемент');
-      }
-      this.element = element;
-
-    
-      this.onCloseClick = this.onCloseClick.bind(this);
-      this.onBackdropClick = this.onBackdropClick.bind(this);
-      this.onEscPress     = this.onEscPress.bind(this);
-
-      this.registerEvents();
-    }
-
-   
-    registerEvents() {
-     
-      this.element
-        .querySelectorAll('[data-dismiss="modal"]')
-        .forEach(btn => btn.addEventListener('click', this.onCloseClick));
-
-     
-      this.element.addEventListener('click', this.onBackdropClick);
-    }
-
+class Modal {
   
-    onCloseClick(e) {
-      e.preventDefault();
-      this.close();
+  constructor(element) {
+    if (!element) {
+      throw new Error('Не был передан элемент модального окна');
     }
-
-  
-    onBackdropClick(e) {
-      if (e.target === this.element) {
-        this.close();
-      }
-    }
-
-   
-    open() {
-      this.element.style.display = 'block';
-      document.addEventListener('keydown', this.onEscPress);
-    }
-
-    close() {
-      this.element.style.display = 'none';
-      document.removeEventListener('keydown', this.onEscPress);
-    }
-
-    onEscPress(e) {
-      if (e.key === 'Escape' || e.key === 'Esc') {
-        this.close();
-      }
-    }
+    /** @private {HTMLElement} */
+    this.element = element;
+    this.registerEvents();
   }
 
-  window.Modal = Modal;
-})();
+  
+  registerEvents() {
+    const dismissButtons = this.element.querySelectorAll('[data-dismiss="modal"]');
+    dismissButtons.forEach(button => {
+      button.addEventListener('click', e => this.onClose(e));
+    });
+  }
+
+  
+  onClose(e) {
+    e.preventDefault(); 
+    this.close();
+  }
+
+  
+  open() {
+    this.element.style.display = 'block';
+  }
+
+ 
+  close() {
+    this.element.style.removeProperty('display');
+  }
+}
