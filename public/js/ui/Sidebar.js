@@ -1,4 +1,4 @@
-export class Sidebar {
+class Sidebar {
  
   static init() {
     this.initAuthLinks();
@@ -7,7 +7,7 @@ export class Sidebar {
 
  
   static initToggleButton() {
-    const toggleButton = document.querySelector('.sidebar-toggle visible-xs'); 
+    const toggleButton = document.querySelector('.sidebar-toggle'); 
     if (!toggleButton) return;
 
     toggleButton.addEventListener('click', (event) => {
@@ -24,6 +24,6 @@ export class Sidebar {
 }
 
 
-window.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', () => {
   Sidebar.init();
 });
