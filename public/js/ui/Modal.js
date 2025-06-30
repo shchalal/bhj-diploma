@@ -5,6 +5,7 @@ class Modal {
     if (!element) {
       throw new Error('Элемент для модального окна не найден');
     }
+    console.log("привет!")
     this.element = element;
     this.registerEvents();
     
@@ -14,7 +15,7 @@ class Modal {
  
   registerEvents() {
     this.element.addEventListener('click', event => {
-      const closeTrigger = event.target.closest('modal-login');
+      const closeTrigger = event.target.closest('[data-dismiss="modal"]');
       if (closeTrigger) {
         this.onClose(event);
       }
