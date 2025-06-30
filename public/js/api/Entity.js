@@ -1,4 +1,4 @@
-import { createRequest } from './createRequest.js';
+import { createRequest } from '../api/createRequest';
 
 
 export class Entity {
