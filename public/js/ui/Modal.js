@@ -14,7 +14,7 @@ class Modal {
  
   registerEvents() {
     this.element.addEventListener('click', event => {
-      const closeTrigger = event.target.closest('[data-dismiss="modal"]');
+      const closeTrigger = event.target.closest('modal-login');
       if (closeTrigger) {
         this.onClose(event);
       }
