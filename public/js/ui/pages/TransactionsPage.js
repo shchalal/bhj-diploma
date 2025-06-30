@@ -1,106 +1,157 @@
-/**
- * Класс TransactionsPage управляет
- * страницей отображения доходов и
- * расходов конкретного счёта
- * */
+
 class TransactionsPage {
-  /**
-   * Если переданный элемент не существует,
-   * необходимо выкинуть ошибку.
-   * Сохраняет переданный элемент и регистрирует события
-   * через registerEvents()
-   * */
-  constructor( element ) {
-
+  
+  constructor(element) {
+    if (!element) throw new Error('Элемент не передан в TransactionsPage');
+    this.element = element;
+    this.lastOptions = null;
+    this.registerEvents();
   }
 
-  /**
-   * Вызывает метод render для отрисовки страницы
-   * */
-  update() {
 
-  }
-
-  /**
-   * Отслеживает нажатие на кнопку удаления транзакции
-   * и удаления самого счёта. Внутри обработчика пользуйтесь
-   * методами TransactionsPage.removeTransaction и
-   * TransactionsPage.removeAccount соответственно
-   * */
   registerEvents() {
-
+  
+    this.element.querySelector('.remove-account')?.addEventListener('click', e => {
+      e.preventDefault();
+      this.removeAccount();
+    });
+  
+    this.element.addEventListener('click', e => {
+      const btn = e.target.closest('.transaction__remove');
+      if (btn) {
+        e.preventDefault();
+        this.removeTransaction(btn.dataset.id);
+      }
+    });
   }
 
-  /**
-   * Удаляет счёт. Необходимо показать диаголовое окно (с помощью confirm())
-   * Если пользователь согласен удалить счёт, вызовите
-   * Account.remove, а также TransactionsPage.clear с
-   * пустыми данными для того, чтобы очистить страницу.
-   * По успешному удалению необходимо вызвать метод App.updateWidgets() и App.updateForms(),
-   * либо обновляйте только виджет со счетами и формы создания дохода и расхода
-   * для обновления приложения
-   * */
-  removeAccount() {
-
+  
+  update() {
+    if (this.lastOptions) this.render(this.lastOptions);
   }
 
-  /**
-   * Удаляет транзакцию (доход или расход). Требует
-   * подтверждеия действия (с помощью confirm()).
-   * По удалению транзакции вызовите метод App.update(),
-   * либо обновляйте текущую страницу (метод update) и виджет со счетами
-   * */
-  removeTransaction( id ) {
-
-  }
-
-  /**
-   * С помощью Account.get() получает название счёта и отображает
-   * его через TransactionsPage.renderTitle.
-   * Получает список Transaction.list и полученные данные передаёт
-   * в TransactionsPage.renderTransactions()
-   * */
-  render(options){
-
-  }
-
-  /**
-   * Очищает страницу. Вызывает
-   * TransactionsPage.renderTransactions() с пустым массивом.
-   * Устанавливает заголовок: «Название счёта»
-   * */
+  
   clear() {
-
+    this.renderTransactions([]);
+    this.renderTitle('Название счёта');
+    this.lastOptions = null;
   }
 
-  /**
-   * Устанавливает заголовок в элемент .content-title
-   * */
-  renderTitle(name){
-
+ 
+  removeAccount() {
+    if (!this.lastOptions) return;
+    if (!confirm('Вы действительно хотите удалить счёт?')) return;
+    Account.remove({ id: this.lastOptions.account_id }, (err, resp) => {
+      if (resp?.success) {
+        this.clear();
+        App.updateWidgets();
+        App.updateForms();
+      }
+    });
   }
 
-  /**
-   * Форматирует дату в формате 2019-03-10 03:20:41 (строка)
-   * в формат «10 марта 2019 г. в 03:20»
-   * */
-  formatDate(date){
-
+  
+  removeTransaction(id) {
+    if (!confirm('Вы действительно хотите удалить эту транзакцию?')) return;
+    Transaction.remove({ id }, (err, resp) => {
+      if (resp?.success) App.update();
+    });
   }
 
-  /**
-   * Формирует HTML-код транзакции (дохода или расхода).
-   * item - объект с информацией о транзакции
-   * */
-  getTransactionHTML(item){
-
+  render(options) {
+    if (!options?.account_id) return;
+    this.lastOptions = options;
+    
+    Account.get({ id: options.account_id }, (err, resp) => {
+      if (resp?.success) this.renderTitle(resp.data.name);
+    });
+    
+    Transaction.list({ account_id: options.account_id }, (err, resp) => {
+      if (resp?.success) this.renderTransactions(resp.data);
+    });
   }
 
-  /**
-   * Отрисовывает список транзакций на странице
-   * используя getTransactionHTML
-   * */
-  renderTransactions(data){
+  renderTitle(name) {
+    const el = this.element.querySelector('.content-title');
+    if (el) el.textContent = name;
+  }
 
+ 
+  formatDate(dateString) {
+    const dt = new Date(dateString.replace(' ', 'T'));
+    const months = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+    const d = dt.getDate();
+    const m = months[dt.getMonth()];
+    const y = dt.getFullYear();
+    const hh = String(dt.getHours()).padStart(2, '0');
+    const mm = String(dt.getMinutes()).padStart(2, '0');
+    return `${d} ${m} ${y} г. в ${hh}:${mm}`;
+  }
+
+  
+  getTransactionElement(item) {
+    const typeClass = item.type === 'income' ? 'transaction_income' : 'transaction_expense';
+    const root = document.createElement('div');
+    root.classList.add('transaction', typeClass, 'row');
+
+ 
+    const details = document.createElement('div');
+    details.classList.add('col-md-7', 'transaction__details');
+    const icon = document.createElement('div');
+    icon.classList.add('transaction__icon');
+    const iconSpan = document.createElement('span');
+    iconSpan.classList.add('fa', 'fa-money', 'fa-2x');
+    icon.appendChild(iconSpan);
+    const info = document.createElement('div');
+    info.classList.add('transaction__info');
+    const title = document.createElement('h4');
+    title.classList.add('transaction__title');
+    title.textContent = item.name;
+    const dateEl = document.createElement('div');
+    dateEl.classList.add('transaction__date');
+    dateEl.textContent = this.formatDate(item.created_at);
+    info.append(title, dateEl);
+    details.append(icon, info);
+
+ 
+    const sumCol = document.createElement('div');
+    sumCol.classList.add('col-md-3');
+    const sumEl = document.createElement('div');
+    sumEl.classList.add('transaction__summ');
+    sumEl.textContent = item.sum.toLocaleString('ru-RU', { minimumFractionDigits: 2 });
+    const currency = document.createElement('span');
+    currency.classList.add('currency');
+    currency.textContent = ' ₽';
+    sumEl.appendChild(currency);
+    sumCol.appendChild(sumEl);
+
+
+    const ctrlCol = document.createElement('div');
+    ctrlCol.classList.add('col-md-2', 'transaction__controls');
+    const btn = document.createElement('button');
+    btn.classList.add('btn', 'btn-danger', 'transaction__remove');
+    btn.dataset.id = item.id;
+    const btnIcon = document.createElement('i');
+    btnIcon.classList.add('fa', 'fa-trash');
+    btn.appendChild(btnIcon);
+    ctrlCol.appendChild(btn);
+
+    root.append(details, sumCol, ctrlCol);
+    return root;
+  }
+
+ 
+  renderTransactions(items) {
+    const container = this.element.querySelector('section.content');
+    if (!container) return;
+    container.innerHTML = '';
+    items.forEach(item => {
+      const el = this.getTransactionElement(item);
+      container.appendChild(el);
+    });
   }
 }
+
+
+if (typeof window !== 'undefined') window.TransactionsPage = TransactionsPage;
+else if (typeof module !== 'undefined') module.exports = TransactionsPage;

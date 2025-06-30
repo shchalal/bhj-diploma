@@ -1,15 +1,20 @@
-/**
- * Класс RegisterForm управляет формой
- * регистрации
- * */
 class RegisterForm extends AsyncForm {
-  /**
-   * Производит регистрацию с помощью User.register
-   * После успешной регистрации устанавливает
-   * состояние App.setState( 'user-logged' )
-   * и закрывает окно, в котором находится форма
-   * */
+ 
   onSubmit(data) {
-
+    User.register(data, response => {
+      if (response && response.success) {
+        this.element.reset();
+        App.setState('user-logged');
+        const modal = App.getModal('register');
+        modal.close();
+      }
+    });
   }
+}
+
+
+if (typeof window !== 'undefined') {
+  window.RegisterForm = RegisterForm;
+} else if (typeof module !== 'undefined' && module.exports) {
+  module.exports = RegisterForm;
 }
