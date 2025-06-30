@@ -1,7 +1,4 @@
-import { createRequest } from './createRequest.js';
-
-
-export class User {
+class User {
   static URL = '/user';
 
  

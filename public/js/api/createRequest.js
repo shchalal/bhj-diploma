@@ -1,4 +1,4 @@
-export const createRequest = (options = {}) => {
+const createRequest = (options = {}) => {
   const {
     url,
     data = {},

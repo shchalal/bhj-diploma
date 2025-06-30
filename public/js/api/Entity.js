@@ -1,7 +1,4 @@
-import { createRequest } from '../api/createRequest';
-
-
-export class Entity {
+class Entity {
   static URL = '';
 
 

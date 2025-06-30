@@ -1,3 +1,233 @@
+// public/js/api/api.js
+
+/**
+ * Send asynchronous requests to the server.
+ * @param {Object} options
+ * @param {string} options.url - Request URL.
+ * @param {Object} [options.data] - Data to send with request.
+ * @param {string} [options.method='GET'] - HTTP method.
+ * @param {Function} options.callback - Callback(err, response).
+ */
+function createRequest({ url, data = {}, method = 'GET', callback }) {
+  const xhr = new XMLHttpRequest();
+  let requestUrl = url;
+  let payload = null;
+
+  // Serialize data for GET requests
+  if (method.toUpperCase() === 'GET' && data && Object.keys(data).length) {
+    const params = new URLSearchParams(data).toString();
+    requestUrl += (url.includes('?') ? '&' : '?') + params;
+  } else if (method.toUpperCase() !== 'GET' && data) {
+    // Build FormData for non-GET methods
+    payload = new FormData();
+    Object.entries(data).forEach(([key, value]) => {
+      payload.append(key, value);
+    });
+  }
+
+  xhr.responseType = 'json';
+  xhr.open(method, requestUrl);
+
+  xhr.onload = () => {
+    const status = xhr.status;
+    if (status >= 200 && status < 300) {
+      callback(null, xhr.response);
+    } else {
+      callback(new Error(`Request failed with status ${status}`), null);
+    }
+  };
+
+  xhr.onerror = () => {
+    callback(new Error('Network error'), null);
+  };
+
+  try {
+    xhr.send(payload);
+  } catch (err) {
+    callback(err, null);
+  }
+}
+
+// Base Entity class
+class Entity {
+  static URL = '';
+
+  /**
+   * Get list of entities.
+   * @param {Object} data - Query parameters.
+   * @param {Function} callback - Callback(err, response).
+   */
+  static list(data, callback) {
+    createRequest({
+      url: this.URL,
+      data,
+      method: 'GET',
+      callback,
+    });
+  }
+
+  /**
+   * Create a new entity.
+   * @param {Object} data - Payload data.
+   * @param {Function} callback - Callback(err, response).
+   */
+  static create(data, callback) {
+    createRequest({
+      url: this.URL,
+      data,
+      method: 'PUT',
+      callback,
+    });
+  }
+
+  /**
+   * Remove an entity.
+   * @param {Object} data - Payload data.
+   * @param {Function} callback - Callback(err, response).
+   */
+  static remove(data, callback) {
+    createRequest({
+      url: this.URL,
+      data,
+      method: 'DELETE',
+      callback,
+    });
+  }
+}
+
+// Account management
+class Account extends Entity {
+  static URL = '/account';
+
+  /**
+   * Get account by ID.
+   * @param {number|string} id - Account ID.
+   * @param {Function} callback - Callback(err, response).
+   */
+  static get(id, callback) {
+    createRequest({
+      url: `${this.URL}/${id}`,
+      method: 'GET',
+      callback,
+    });
+  }
+}
+
+// Transaction management
+class Transaction extends Entity {
+  static URL = '/transaction';
+  // Inherits list, create, remove methods
+}
+
+// User management
+class User {
+  static URL = '/user';
+
+  /**
+   * Store current user in localStorage.
+   * @param {Object} user - User object.
+   */
+  static setCurrent(user) {
+    localStorage.setItem('user', JSON.stringify(user));
+  }
+
+  /**
+   * Get current user from localStorage.
+   * @returns {Object|undefined}
+   */
+  static current() {
+    const userData = localStorage.getItem('user');
+    return userData ? JSON.parse(userData) : undefined;
+  }
+
+  /**
+   * Remove current user from localStorage.
+   */
+  static unsetCurrent() {
+    localStorage.removeItem('user');
+  }
+
+  /**
+   * Fetch current authenticated user from server.
+   * @param {Function} callback - Callback(err, response).
+   */
+  static fetch(callback) {
+    createRequest({
+      url: `${this.URL}/current`,
+      method: 'GET',
+      callback: (err, response) => {
+        if (!err && response.success && response.user) {
+          User.setCurrent(response.user);
+        } else {
+          User.unsetCurrent();
+        }
+        callback(err, response);
+      },
+    });
+  }
+
+  /**
+   * Register a new user.
+   * @param {Object} data - Registration data (name, email, password).
+   * @param {Function} callback - Callback(err, response).
+   */
+  static register(data, callback) {
+    createRequest({
+      url: `${this.URL}/register`,
+      data,
+      method: 'POST',
+      callback: (err, response) => {
+        if (!err && response.success && response.user) {
+          User.setCurrent(response.user);
+        }
+        callback(err, response);
+      },
+    });
+  }
+
+  /**
+   * Login existing user.
+   * @param {Object} data - Login data (email, password).
+   * @param {Function} callback - Callback(err, response).
+   */
+  static login(data, callback) {
+    createRequest({
+      url: `${this.URL}/login`,
+      data,
+      method: 'POST',
+      callback: (err, response) => {
+        if (!err && response.success && response.user) {
+          User.setCurrent(response.user);
+        }
+        callback(err, response);
+      },
+    });
+  }
+
+  /**
+   * Logout current user.
+   * @param {Function} callback - Callback(err, response).
+   */
+  static logout(callback) {
+    createRequest({
+      url: `${this.URL}/logout`,
+      method: 'POST',
+      callback: (err, response) => {
+        if (!err && response.success) {
+          User.unsetCurrent();
+        }
+        callback(err, response);
+      },
+    });
+  }
+}
+
+// Expose globally if using modules is not required
+window.createRequest = createRequest;
+window.Entity = Entity;
+window.Account = Account;
+window.Transaction = Transaction;
+window.User = User;
 # Диплом курса «Базовый JavaScript в браузере»
 
 Наше веб-приложение предполагает такие функции

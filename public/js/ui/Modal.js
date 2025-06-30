@@ -1,4 +1,4 @@
-(function() {
+
 class Modal {
  
   constructor(element) {
@@ -6,6 +6,7 @@ class Modal {
       throw new Error('Элемент для модального окна не найден');
     }
     this.element = element;
+    console.log(element);
     this.registerEvents();
     
     this.close();
@@ -15,6 +16,7 @@ class Modal {
   registerEvents() {
     this.element.addEventListener('click', event => {
       const closeTrigger = event.target.closest('[data-dismiss="modal"]');
+      console.log(123);
       if (closeTrigger) {
         this.onClose(event);
       }
@@ -45,5 +47,3 @@ if (typeof module !== 'undefined' && module.exports) {
 } else {
   window.Modal = Modal;
 }
-
-})();
