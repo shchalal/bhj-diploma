@@ -1,11 +1,10 @@
-
+(function() {
 class Modal {
  
   constructor(element) {
     if (!element) {
       throw new Error('Элемент для модального окна не найден');
     }
-    console.log("привет!")
     this.element = element;
     this.registerEvents();
     
@@ -46,3 +45,5 @@ if (typeof module !== 'undefined' && module.exports) {
 } else {
   window.Modal = Modal;
 }
+
+})();
