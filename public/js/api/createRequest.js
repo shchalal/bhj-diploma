@@ -1,4 +1,4 @@
-const createRequest = (options = {}) => {
+export const createRequest = (options = {}) => {
   const {
     url,
     data = {},
@@ -25,7 +25,6 @@ const createRequest = (options = {}) => {
     xhr.onload = () => {
       if (xhr.status >= 200 && xhr.status < 300) {
         callback(null, xhr.response);
-        console.log(xhr.response)
       } else {
         callback(new Error(`Request failed with status ${xhr.status}`), null);
       }
