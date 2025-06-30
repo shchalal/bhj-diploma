@@ -14,7 +14,7 @@
       });
     }
     static initAuthLinks() {
-      // ...
+    
     }
   }
 
